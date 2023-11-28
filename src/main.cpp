@@ -23,7 +23,7 @@
  */
 
 #define ENABLE_RSSI true
-
+#define FREQUENCY_915
 #include "Arduino.h"
 #include "LoRa_E22.h"
 
@@ -36,7 +36,7 @@ LoRa_E22 e22ttl(&Serial2, 18, 21, 19); //  RX AUX M0 M1
 
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   delay(500);
 
   // Startup all pins and UART
