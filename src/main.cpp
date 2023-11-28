@@ -23,20 +23,20 @@
  */
 
 #define ENABLE_RSSI true
-
+#define FREQUENCY_915
 #include "Arduino.h"
 #include "LoRa_E22.h"
 
 
 // ---------- esp32 pins --------------
-LoRa_E22 e22ttl(&Serial2, 18, 21, 19, UART_BPS_RATE_115200); //  RX AUX M0 M1
+LoRa_E22 e22ttl(&Serial2, 18, 21, 19,UART_BPS_RATE_115200 ); //  RX AUX M0 M1
 
 //LoRa_E22 e22ttl(&Serial2, 22, 4, 18, 21, 19, UART_BPS_RATE_9600); //  esp32 RX <-- e22 TX, esp32 TX --> e22 RX AUX M0 M1
 // -------------------------------------
 
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   delay(500);
 
   // Startup all pins and UART
@@ -81,7 +81,7 @@ void loop() {
 	}
   }
   if (Serial.available()) {
-	  String input = Serial.readString();
-	  e22ttl.sendMessage(input);
+	  String lidarData = Serial.readStringUntil(0xAA);
+	  e22ttl.sendMessage(lidarData);
   }
 }
