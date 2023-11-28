@@ -88,7 +88,6 @@ void loop()
 	if (Serial.available())
 	{
 		String lidarData = Serial.readStringUntil('\n'); // Read data until newline character
-		String input = Serial.readString();
-		e22ttl.sendMessage(input);
+		e22ttl.sendMessage(lidarData);
 	}
 }
