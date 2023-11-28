@@ -27,61 +27,68 @@
 #include "Arduino.h"
 #include "LoRa_E22.h"
 
-
 // ---------- esp32 pins --------------
 LoRa_E22 e22ttl(&Serial2, 18, 21, 19); //  RX AUX M0 M1
 
-//LoRa_E22 e22ttl(&Serial2, 22, 4, 18, 21, 19, UART_BPS_RATE_9600); //  esp32 RX <-- e22 TX, esp32 TX --> e22 RX AUX M0 M1
-// -------------------------------------
+// LoRa_E22 e22ttl(&Serial2, 22, 4, 18, 21, 19, UART_BPS_RATE_9600); //  esp32 RX <-- e22 TX, esp32 TX --> e22 RX AUX M0 M1
+//  -------------------------------------
 
+void setup()
+{
+	Serial.begin(115200);
+	delay(500);
 
-void setup() {
-  Serial.begin(115200);
-  delay(500);
+	// Startup all pins and UART
+	e22ttl.begin();
 
-  // Startup all pins and UART
-  e22ttl.begin();
-
-//  If you have ever change configuration you must restore It
+	//  If you have ever change configuration you must restore It
 	ResponseStructContainer c;
 	c = e22ttl.getConfiguration();
-	Configuration configuration = *(Configuration*) c.data;
+	Configuration configuration = *(Configuration *)c.data;
 	Serial.println(c.status.getResponseDescription());
 	configuration.CHAN = 0x17;
 	configuration.TRANSMISSION_MODE.fixedTransmission = FT_TRANSPARENT_TRANSMISSION;
 	e22ttl.setConfiguration(configuration, WRITE_CFG_PWR_DWN_SAVE);
 
-  Serial.println("Hi, I'm going to send message!");
+	Serial.println("Hi, I'm going to send message!");
 
-  // Send message
-  ResponseStatus rs = e22ttl.sendMessage("Hello, Pedro ");
-  // Check If there is some problem of succesfully send
-  Serial.println(rs.getResponseDescription());
+	// Send message
+	ResponseStatus rs = e22ttl.sendMessage("Hello, Pedro ");
+	// Check If there is some problem of succesfully send
+	Serial.println(rs.getResponseDescription());
 }
 
-void loop() {
+void loop()
+{
 	// If something available
-  if (e22ttl.available()>1) {
-	  // read the String message
+	if (e22ttl.available() > 1)
+	{
+		// read the String message
 #ifdef ENABLE_RSSI
-	ResponseContainer rc = e22ttl.receiveMessageRSSI();
+		ResponseContainer rc = e22ttl.receiveMessageRSSI();
 #else
-	ResponseContainer rc = e22ttl.receiveMessage();
+		ResponseContainer rc = e22ttl.receiveMessage();
 #endif
-	// Is something goes wrong print error
-	if (rc.status.code!=1){
-		Serial.println(rc.status.getResponseDescription());
-	}else{
-		// Print the data received
-		Serial.println(rc.status.getResponseDescription());
-		Serial.println(rc.data);
+		// Is something goes wrong print error
+		if (rc.status.code != 1)
+		{
+			Serial.println(rc.status.getResponseDescription());
+		}
+		else
+		{
+			// Print the data received
+			Serial.println(rc.status.getResponseDescription());
+			Serial.println(rc.data);
 #ifdef ENABLE_RSSI
-		Serial.print("RSSI: "); Serial.println(rc.rssi, DEC);
+			Serial.print("RSSI: ");
+			Serial.println(rc.rssi, DEC);
 #endif
+		}
 	}
-  }
-  if (Serial.available()) {
-	  String input = Serial.readString();
-	  e22ttl.sendMessage(input);
-  }
+	if (Serial.available())
+	{
+		String lidarData = Serial.readStringUntil('\n'); // Read data until newline character
+		String input = Serial.readString();
+		e22ttl.sendMessage(input);
+	}
 }
