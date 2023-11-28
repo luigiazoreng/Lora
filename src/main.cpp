@@ -81,7 +81,7 @@ void loop() {
 	}
   }
   if (Serial.available()) {
-	  String lidarData = Serial.readStringUntil(0xAA);
+	  String lidarData = Serial.readStringUntil('\n');
 	  e22ttl.sendMessage(lidarData);
   }
 }
