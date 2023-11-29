@@ -92,7 +92,7 @@ void loop()
 		byte testeHexa = 0x10;
 		String lidarData = Serial.readString();
 
-		String sending = String(testeHexa, HEX);
+		String sending = String(testeHexa, HEX) + "\r\n";
 
 		e22ttl.sendMessage(sending);
 	}
