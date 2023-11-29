@@ -26,9 +26,7 @@
 #define FREQUENCY_915
 #include "Arduino.h"
 #include "LoRa_E22.h"
-#include "iostream"
-#include <iomanip>
-#include <sstream>
+
 
 // ---------- esp32 pins --------------
 LoRa_E22 e22ttl(&Serial2, 18, 21, 19, UART_BPS_RATE_115200); //  RX AUX M0 M1
