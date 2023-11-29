@@ -159,3 +159,4 @@ void loop()
 		sending = sending + "\r\n";
 		e22ttl.sendMessage(sending);
 	}
+}
