@@ -27,7 +27,6 @@
 #include "Arduino.h"
 #include "LoRa_E22.h"
 
-
 // ---------- esp32 pins --------------
 LoRa_E22 e22ttl(&Serial2, 18, 21, 19); //  RX AUX M0 M1
 
@@ -86,14 +85,77 @@ void loop()
 #endif
 		}
 	}
+	int rxDataPacketLength = 0;
+	int index = 0;
+	byte rxDataArray[2048] = {};
+	byte rxBuffer[2048] = {};
 
 	if (Serial.available())
 	{
+		int rxLength = 0;
+		try
+		{
+			rxLength = Serial.read(rxBuffer, 2048);
+		}
+		catch (const std::exception &e)
+		{
+			Serial.println("Error reading data");
+		}
+		for (int i = 0; i < rxLength; i++)
+		{
+			if (index == 0)
+			{
+				// Get 1st Sync Flag
+				if (rxBuffer[i] == 0xAA)
+				{
+					// 1st Sync Flag received
+					rxDataArray[index++] = rxBuffer[i];
+				}
+			}
+			else if (index == 1)
+			{
+				// Get 2nd Sync Flag
+				if (rxBuffer[i] == 0x00)
+				{
+					// 2nd Sync Flag received
+					rxDataArray[index++] = rxBuffer[i];
+				}
+				else
+				{
+					// Sync failed, restart search
+					index = 0;
+				}
+			}
+			else if (index == 2)
+			{
+				// Get length field
+				rxDataPacketLength = rxBuffer[i] + 2;
+				rxDataArray[index++] = rxBuffer[i];
+			}
+			else if (index < rxDataPacketLength)
+			{
+				// Get rest of the packet bytes
+				rxDataArray[index++] = rxBuffer[i];
+				// Check for full packet received
+				if (index == rxDataPacketLength)
+				{
+					// Full packet received, get crc from packege (last two bytes)
+					// Calculate and check CRC
+					int pktCRC = (rxDataArray[index - 2] << 8);
+					pktCRC += rxDataArray[index - 1];
+					index = 0;
+				}
+			}
+		}
+
+		String sending = "";
+		for (int i = 0; i < rxDataPacketLength; ++i)
+		{
+			sending += String(rxDataArray[i], HEX);
+		}
+
 		byte testeHexa = 0x10;
-		String lidarData = Serial.readString();
-
-		String sending = String(testeHexa, HEX) + "\r\n";
-
+		// byte lidarData = Serial.read();
+		sending = sending + "\r\n";
 		e22ttl.sendMessage(sending);
 	}
-}
