@@ -151,6 +151,9 @@ void loop()
 		String sending = "";
 		for (int i = 0; i < rxDataPacketLength; ++i)
 		{
+			if(rxDataArray[i] < 0x10){
+				sending += "0";
+			}
 			sending += String(rxDataArray[i], HEX);
 		}
 
