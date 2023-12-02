@@ -26,7 +26,9 @@
 #define FREQUENCY_915
 #include "Arduino.h"
 #include "LoRa_E22.h"
+#include "Lidar.h"
 
+Lidar lidar;
 
 // ---------- esp32 pins --------------
 LoRa_E22 e22ttl(&Serial2, 18, 21, 19); //  RX AUX M0 M1
@@ -42,7 +44,6 @@ void setup()
 	// Startup all pins and UART
 	e22ttl.begin();
 
-	//  If you have ever change configuration you must restore It
 	//  If you have ever change configuration you must restore It
 	ResponseStructContainer c;
 	c = e22ttl.getConfiguration();
@@ -82,28 +83,7 @@ void loop()
 			// Serial.println(rc.status.getResponseDescription());
 			// Print the message received
 			// Serial.println(rc.data);
-
-			String req = rc.data;
-			// Determine the size of the byte array based on the length of the received string
-			size_t receivedSize = req.length();
-			size_t byteArraySize = receivedSize / 2;
-
-			// Create a byte array
-			byte receivedByteArray[byteArraySize];
-			// Convert the hexadecimal string to a byte array
-			for (size_t i = 0; i < byteArraySize; ++i)
-			{
-				// Extract two characters from the string
-				char hex[3] = {req[i * 2], req[i * 2 + 1], '\0'};
-
-				// Convert the substring to a long
-				receivedByteArray[i] = strtoul(hex, nullptr, 16);
-			}
-			for (size_t i = 0; i < byteArraySize; ++i)
-			{
-				Serial.write(receivedByteArray[i]);
-				
-			}
+			lidar.printHexa(rc.data);
 
 #ifdef ENABLE_RSSI
 			// Serial.print("RSSI: "); Serial.println(rc.rssi, DEC);
@@ -113,6 +93,7 @@ void loop()
 	if (Serial.available())
 	{
 		String input = Serial.readString();
+		input.concat("\r\n");
 		e22ttl.sendMessage(input);
 	}
 }

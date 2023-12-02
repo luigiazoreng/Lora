@@ -8,6 +8,9 @@
         "fstream": "cpp",
         "istream": "cpp",
         "memory": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp"
     }
 }

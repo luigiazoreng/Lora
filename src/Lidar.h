@@ -10,7 +10,7 @@ class Lidar {
 public:
   
   Lidar();  // Constructor
-  void doSomething();
+  void printHexa(String req);
   String createString(byte rxBuffer[2048], int Length);
 };
 
