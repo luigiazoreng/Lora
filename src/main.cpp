@@ -63,6 +63,8 @@ void setup()
 	ResponseStatus rs = e22ttl.sendMessage("Starting, LoRa and Lidar...");
 	// Check If there is some problem of succesfully send
 	Serial.println(rs.getResponseDescription());
+	digitalWrite(RELAY_1, HIGH); //
+	digitalWrite(RELAY_2, HIGH);
 }
 
 void loop()
@@ -71,7 +73,7 @@ void loop()
 	if (e22ttl.available() > 1)
 	{
 		//cut off tx of lidar for using serial port for another functionality
-		digitalWrite(RELAY_1, LOW);
+		digitalWrite(RELAY_1, HIGH);
 		delay(1000); // Wait for 1 second
 		// read the String message
 #ifdef ENABLE_RSSI
@@ -91,17 +93,17 @@ void loop()
 			// Print the data received
 			Serial.println(rc.data);
 
-			if (rc.data == "LED ON")
+			if (rc.data == "SET LED ON")
 			{
 				//set LED ON
-				digitalWrite(RELAY_2, HIGH);
-			}else if (rc.data == "LED OFF"){
-				//set LED OFF
 				digitalWrite(RELAY_2, LOW);
+			}else if (rc.data == "SET LED OFF"){
+				//set LED OFF
+				digitalWrite(RELAY_2, HIGH);
 			}
 			
 		}
-		digitalWrite(RELAY_1, HIGH);
+		digitalWrite(RELAY_1, LOW);
 		delay(1000); 
 	}
 	if (Serial.available())
