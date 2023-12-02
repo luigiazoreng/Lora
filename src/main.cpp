@@ -26,7 +26,12 @@
 #define FREQUENCY_915
 #include "Arduino.h"
 #include "LoRa_E22.h"
+#include "Lidar.h"
 
+#define RELAY_1 13
+#define RELAY_2 12
+
+Lidar lidar;
 // ---------- esp32 pins --------------
 LoRa_E22 e22ttl(&Serial2, 18, 21, 19); //  RX AUX M0 M1
 
@@ -36,6 +41,8 @@ LoRa_E22 e22ttl(&Serial2, 18, 21, 19); //  RX AUX M0 M1
 void setup()
 {
 	Serial.begin(115200);
+	pinMode(RELAY_1, OUTPUT);
+	pinMode(RELAY_2, OUTPUT);
 	delay(500);
 
 	// Startup all pins and UART
@@ -53,7 +60,7 @@ void setup()
 	Serial.println("Hi, I'm going to send message!");
 
 	// Send message
-	ResponseStatus rs = e22ttl.sendMessage("Hello, Pedro ");
+	ResponseStatus rs = e22ttl.sendMessage("Starting, LoRa and Lidar...");
 	// Check If there is some problem of succesfully send
 	Serial.println(rs.getResponseDescription());
 }
@@ -63,6 +70,9 @@ void loop()
 	// If something available
 	if (e22ttl.available() > 1)
 	{
+		//cut off tx of lidar for using serial port for another functionality
+		digitalWrite(RELAY_1, LOW);
+		delay(1000); // Wait for 1 second
 		// read the String message
 #ifdef ENABLE_RSSI
 		ResponseContainer rc = e22ttl.receiveMessageRSSI();
@@ -76,22 +86,27 @@ void loop()
 		}
 		else
 		{
+			// print status message
+			//  Serial.println(rc.status.getResponseDescription());
 			// Print the data received
-			Serial.println(rc.status.getResponseDescription());
 			Serial.println(rc.data);
-#ifdef ENABLE_RSSI
-			Serial.print("RSSI: ");
-			Serial.println(rc.rssi, DEC);
-#endif
-		}
-	}
-	int rxDataPacketLength = 0;
-	int index = 0;
-	byte rxDataArray[2048] = {};
-	byte rxBuffer[2048] = {};
 
+			if (rc.data == "LED ON")
+			{
+				//set LED ON
+				digitalWrite(RELAY_2, HIGH);
+			}else if (rc.data == "LED OFF"){
+				//set LED OFF
+				digitalWrite(RELAY_2, LOW);
+			}
+			
+		}
+		digitalWrite(RELAY_1, HIGH);
+		delay(1000); 
+	}
 	if (Serial.available())
 	{
+		byte rxBuffer[2048] = {};
 		int rxLength = 0;
 		try
 		{
@@ -101,65 +116,9 @@ void loop()
 		{
 			Serial.println("Error reading data");
 		}
-		for (int i = 0; i < rxLength; i++)
-		{
-			if (index == 0)
-			{
-				// Get 1st Sync Flag
-				if (rxBuffer[i] == 0xAA)
-				{
-					// 1st Sync Flag received
-					rxDataArray[index++] = rxBuffer[i];
-				}
-			}
-			else if (index == 1)
-			{
-				// Get 2nd Sync Flag
-				if (rxBuffer[i] == 0x00)
-				{
-					// 2nd Sync Flag received
-					rxDataArray[index++] = rxBuffer[i];
-				}
-				else
-				{
-					// Sync failed, restart search
-					index = 0;
-				}
-			}
-			else if (index == 2)
-			{
-				// Get length field
-				rxDataPacketLength = rxBuffer[i] + 2;
-				rxDataArray[index++] = rxBuffer[i];
-			}
-			else if (index < rxDataPacketLength)
-			{
-				// Get rest of the packet bytes
-				rxDataArray[index++] = rxBuffer[i];
-				// Check for full packet received
-				if (index == rxDataPacketLength)
-				{
-					// Full packet received, get crc from packege (last two bytes)
-					// Calculate and check CRC
-					int pktCRC = (rxDataArray[index - 2] << 8);
-					pktCRC += rxDataArray[index - 1];
-					index = 0;
-				}
-			}
-		}
 
-		String sending = "";
-		for (int i = 0; i < rxDataPacketLength; ++i)
-		{
-			if(rxDataArray[i] < 0x10){
-				sending += "0";
-			}
-			sending += String(rxDataArray[i], HEX);
-		}
+		String message = lidar.createString(rxBuffer, rxLength);
 
-		byte testeHexa = 0x10;
-		// byte lidarData = Serial.read();
-		sending = sending + "\r\n";
-		e22ttl.sendMessage(sending);
+		e22ttl.sendMessage(message);
 	}
 }
