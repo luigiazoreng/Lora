@@ -27,6 +27,7 @@
 #include "Arduino.h"
 #include "LoRa_E22.h"
 
+
 // ---------- esp32 pins --------------
 LoRa_E22 e22ttl(&Serial2, 18, 21, 19); //  RX AUX M0 M1
 
@@ -41,6 +42,7 @@ void setup()
 	// Startup all pins and UART
 	e22ttl.begin();
 
+	//  If you have ever change configuration you must restore It
 	//  If you have ever change configuration you must restore It
 	ResponseStructContainer c;
 	c = e22ttl.getConfiguration();
