@@ -29,7 +29,7 @@
 #include "Lidar.h"
 
 #define RELAY_1 13
-#define RELAY_2 12
+#define RELAY_2 14
 
 Lidar lidar;
 // ---------- esp32 pins --------------
