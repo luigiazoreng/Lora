@@ -56,7 +56,7 @@ void setup()
 	Serial.println("Hi, I'm going to send message!");
 
 	// Send message
-	ResponseStatus rs = e22ttl.sendMessage("Hello, Pedro ");
+	ResponseStatus rs = e22ttl.sendMessage("Hello, I'm the receiver ");
 	// Check If there is some problem of succesfully send
 	Serial.println(rs.getResponseDescription());
 }
