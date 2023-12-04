@@ -91,10 +91,21 @@ void loop()
 #endif
 		}
 	}
-	if (Serial.available())
+if (Serial.available())
 	{
-		String input = Serial.readString();
-		input.concat("\r\n");
-		e22ttl.sendMessage(input);
+		byte rxBuffer[2048] = {};
+		int rxLength = 0;
+		try
+		{
+			rxLength = Serial.read(rxBuffer, 2048);
+		}
+		catch (const std::exception &e)
+		{
+			Serial.println("Error reading data");
+		}
+
+		String message = lidar.createString(rxBuffer, rxLength);
+
+		e22ttl.sendMessage(message);
 	}
 }
