@@ -59,8 +59,7 @@ void setup()
 	ResponseStatus rs = e22ttl.sendMessage("Hello, I'm the receiver ");
 	// Check If there is some problem of succesfully send
 	Serial.println(rs.getResponseDescription());
-	digitalWrite(RELAY_1, HIGH); //
-	digitalWrite(RELAY_2, HIGH);
+
 }
 
 void loop()
@@ -84,8 +83,8 @@ void loop()
 			// Print the status received
 			// Serial.println(rc.status.getResponseDescription());
 			// Print the message received
-			// Serial.println(rc.data);
-			lidar.printHexa(rc.data);
+			Serial.println(rc.data);
+			
 
 #ifdef ENABLE_RSSI
 			// Serial.print("RSSI: "); Serial.println(rc.rssi, DEC);
