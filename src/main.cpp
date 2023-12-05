@@ -21,15 +21,20 @@
  * GND        ----- GND
  *
  */
-
-#define ENABLE_RSSI true
-#define FREQUENCY_915
 #include "Arduino.h"
 #include "LoRa_E22.h"
 #include "Lidar.h"
+#include <SoftwareSerial.h>
+#include "Motor.h"
+
+#define ENABLE_RSSI true
+#define FREQUENCY_915
+#define RX (12)
+#define TX (13)
 
 Lidar lidar;
-
+Motor motor;
+EspSoftwareSerial::UART extraSerial;
 // ---------- esp32 pins --------------
 LoRa_E22 e22ttl(&Serial2, 18, 21, 19); //  RX AUX M0 M1
 
@@ -38,7 +43,10 @@ LoRa_E22 e22ttl(&Serial2, 18, 21, 19); //  RX AUX M0 M1
 
 void setup()
 {
+	motor.set();
 	Serial.begin(115200);
+	extraSerial.begin(115200, EspSoftwareSerial::SWSERIAL_8N1, RX, TX);
+
 	delay(500);
 
 	// Startup all pins and UART
@@ -56,10 +64,9 @@ void setup()
 	Serial.println("Hi, I'm going to send message!");
 
 	// Send message
-	ResponseStatus rs = e22ttl.sendMessage("Hello, I'm the receiver ");
+	ResponseStatus rs = e22ttl.sendMessage("Hello, I'm the transmitter, the robot ");
 	// Check If there is some problem of succesfully send
 	Serial.println(rs.getResponseDescription());
-
 }
 
 void loop()
@@ -84,14 +91,32 @@ void loop()
 			// Serial.println(rc.status.getResponseDescription());
 			// Print the message received
 			Serial.println(rc.data);
-			
+			char command = rc.data.charAt(0);
+			switch (command)
+			{
+			case 'W':
+				motor.forward();
+				break;
+			case 'S':
+				motor.backward();
+				break;
+			case 'A':
+				motor.left();
+				break;	
+			case 'D':
+				motor.right();
+				break;
+			default:
+				motor.stop();
+				break;
+			}
 
 #ifdef ENABLE_RSSI
 			// Serial.print("RSSI: "); Serial.println(rc.rssi, DEC);
 #endif
 		}
 	}
-if (Serial.available())
+	if (extraSerial.available() > 1)
 	{
 		byte rxBuffer[2048] = {};
 		int rxLength = 0;
