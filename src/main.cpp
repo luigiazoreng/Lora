@@ -117,12 +117,12 @@ void loop()
 		}
 	}
 	if (extraSerial.available() > 1)
-	{
+	{	
 		byte rxBuffer[2048] = {};
 		int rxLength = 0;
 		try
 		{
-			rxLength = Serial.read(rxBuffer, 2048);
+			rxLength = extraSerial.read(rxBuffer, 2048);
 		}
 		catch (const std::exception &e)
 		{
