@@ -4,10 +4,9 @@
 Motor::Motor()
 {
     // Constructor implementation
-    
 }
 
-void set()
+void Motor::set()
 {
     pinMode(pinoMotor0, OUTPUT);
     pinMode(pinoMotor1, OUTPUT);
@@ -15,7 +14,7 @@ void set()
     pinMode(pinoMotor3, OUTPUT);
 }
 
-void forward()
+void Motor::forward()
 {
     // going foward
     digitalWrite(pinoMotor1, HIGH);
@@ -23,7 +22,7 @@ void forward()
     digitalWrite(pinoMotor3, LOW);
     digitalWrite(pinoMotor0, LOW);
 }
-void backward()
+void Motor::backward()
 {
     //going backwards
     digitalWrite(pinoMotor1, LOW);
@@ -32,7 +31,7 @@ void backward()
     digitalWrite(pinoMotor0, LOW);
 }
 
-void left()
+void Motor::left()
 {
     // going left
     digitalWrite(pinoMotor1, LOW);
@@ -41,7 +40,7 @@ void left()
     digitalWrite(pinoMotor0, HIGH);
 }
 
-void right()
+void Motor::right()
 {
     // going right
     digitalWrite(pinoMotor1, HIGH);
@@ -49,7 +48,7 @@ void right()
     digitalWrite(pinoMotor3, HIGH);
     digitalWrite(pinoMotor0, LOW);
 }
-void stop()
+void Motor::stop()
 {
     // stopped
     digitalWrite(pinoMotor1, LOW);

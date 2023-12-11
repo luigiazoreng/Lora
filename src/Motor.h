@@ -4,6 +4,7 @@
 class Motor
 {
 public:
+    Motor();
     void set();
     void forward();
     void backward();
