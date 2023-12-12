@@ -26,12 +26,10 @@
 #include "Lidar.h"
 #include "Motor.h"
 
-
 #define ENABLE_RSSI true
 #define FREQUENCY_915
 #define RX1 27
 #define TX1 14
-
 
 Lidar lidar;
 Motor motor;
@@ -87,42 +85,42 @@ void loop()
 		else
 		{
 			// Print the status received
-			// Serial.println(rc.status.getResponseDescription());
+			//Serial.println(rc.status.getResponseDescription());
 			// Print the message received
 			Serial.println(rc.data);
-			char command = rc.data.charAt(0);
-			switch (command)
-			{
-			case 'W':
-				motor.forward();
-				break;
-			case 'S':
-				motor.backward();
-				break;
-			case 'A':
-				motor.left();
-				break;
-			case 'D':
-				motor.right();
-				break;
-			default:
-				motor.stop();
-				break;
-			}
+			// char command = rc.data.charAt(0);
+			// switch (command)
+			// {
+			// case 'W':
+			// 	motor.forward();
+			// 	break;
+			// case 'S':
+			// 	motor.backward();
+			// 	break;
+			// case 'A':
+			// 	motor.left();
+			// 	break;
+			// case 'D':
+			// 	motor.right();
+			// 	break;
+			// default:
+			// 	motor.stop();
+			// 	break;
+			// }
 
 #ifdef ENABLE_RSSI
 			// Serial.print("RSSI: "); Serial.println(rc.rssi, DEC);
 #endif
 		}
 	}
-	if (Serial.available() > 0)
+	if (Serial1.available() > 1)
 	{
-		Serial.println("sending data...");
+		//Serial.println("sending data...");
 		byte rxBuffer[2048] = {};
 		int rxLength = 0;
 		try
 		{
-			rxLength = Serial.read(rxBuffer, 2048);
+			rxLength = Serial1.read(rxBuffer, 2048);
 		}
 		catch (const std::exception &e)
 		{
@@ -130,7 +128,7 @@ void loop()
 		}
 
 		String message = lidar.createString(rxBuffer, rxLength);
-		
+
 		e22ttl.sendMessage(message);
 	}
 }
