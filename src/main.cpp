@@ -24,19 +24,17 @@
 #include "Arduino.h"
 #include "LoRa_E22.h"
 #include "Lidar.h"
-#include <SoftwareSerial.h>
 #include "Motor.h"
 
 
 #define ENABLE_RSSI true
 #define FREQUENCY_915
 #define RX1 27
-#define TX1 10
+#define TX1 14
 
 
 Lidar lidar;
 Motor motor;
-HardwareSerial Serial1(1);
 // ---------- esp32 pins --------------
 LoRa_E22 e22ttl(&Serial2, 18, 21, 19); //  RX AUX M0 M1
 
@@ -117,14 +115,14 @@ void loop()
 #endif
 		}
 	}
-	if (Serial1.available() > 0)
+	if (Serial.available() > 0)
 	{
 		Serial.println("sending data...");
 		byte rxBuffer[2048] = {};
 		int rxLength = 0;
 		try
 		{
-			rxLength = Serial1.read(rxBuffer, 2048);
+			rxLength = Serial.read(rxBuffer, 2048);
 		}
 		catch (const std::exception &e)
 		{
