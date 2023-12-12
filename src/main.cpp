@@ -27,14 +27,16 @@
 #include <SoftwareSerial.h>
 #include "Motor.h"
 
+
 #define ENABLE_RSSI true
 #define FREQUENCY_915
-#define RX (12)
-#define TX (13)
+#define RX1 27
+#define TX1 10
+
 
 Lidar lidar;
 Motor motor;
-EspSoftwareSerial::UART extraSerial;
+HardwareSerial Serial1(1);
 // ---------- esp32 pins --------------
 LoRa_E22 e22ttl(&Serial2, 18, 21, 19); //  RX AUX M0 M1
 
@@ -45,8 +47,7 @@ void setup()
 {
 	motor.set();
 	Serial.begin(115200);
-	extraSerial.begin(115200, EspSoftwareSerial::SWSERIAL_8N1, RX, TX);
-
+	Serial1.begin(115200, SERIAL_8N1, RX1, TX1);
 	delay(500);
 
 	// Startup all pins and UART
@@ -102,7 +103,7 @@ void loop()
 				break;
 			case 'A':
 				motor.left();
-				break;	
+				break;
 			case 'D':
 				motor.right();
 				break;
@@ -116,13 +117,14 @@ void loop()
 #endif
 		}
 	}
-	if (extraSerial.available() > 1)
-	{	
+	if (Serial1.available() > 0)
+	{
+		Serial.println("sending data...");
 		byte rxBuffer[2048] = {};
 		int rxLength = 0;
 		try
 		{
-			rxLength = extraSerial.read(rxBuffer, 2048);
+			rxLength = Serial1.read(rxBuffer, 2048);
 		}
 		catch (const std::exception &e)
 		{
@@ -130,7 +132,7 @@ void loop()
 		}
 
 		String message = lidar.createString(rxBuffer, rxLength);
-
+		
 		e22ttl.sendMessage(message);
 	}
 }
