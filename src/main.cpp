@@ -28,6 +28,8 @@
 #include "LoRa_E22.h"
 #include "Lidar.h"
 
+#define pinLED 2
+
 Lidar lidar;
 
 // ---------- esp32 pins --------------
@@ -43,7 +45,7 @@ void setup()
 
 	// Startup all pins and UART
 	e22ttl.begin();
-
+	pinMode(pinLED, OUTPUT);
 	//  If you have ever change configuration you must restore It
 	ResponseStructContainer c;
 	c = e22ttl.getConfiguration();
@@ -90,10 +92,17 @@ void loop()
 #endif
 		}
 	}
-	if (Serial.available())
+	
+
+	if (Serial.available() > 0)
 	{
+		digitalWrite(pinLED, HIGH);
 		String input = Serial.readString();
+		Serial.println(input);
 		input.concat("\r\n");
 		e22ttl.sendMessage(input);
 	}
+	
+		delay(500);
+		digitalWrite(pinLED, LOW);
 }
