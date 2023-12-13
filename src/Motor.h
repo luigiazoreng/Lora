@@ -15,7 +15,7 @@ public:
 private:
     #define pinoMotor0 25
     #define pinoMotor1 26
-    #define pinoMotor2 13
+    #define pinoMotor2 15
     #define pinoMotor3 14
 };
 #endif // MOTOR_H

@@ -29,12 +29,12 @@
 #define ENABLE_RSSI true
 #define FREQUENCY_915
 #define RX1 27
-#define TX1 14
+#define TX1 13
 
 Lidar lidar;
 Motor motor;
 // ---------- esp32 pins --------------
-LoRa_E22 e22ttl(&Serial2, 18, 21, 19); //  RX AUX M0 M1
+LoRa_E22 e22ttl(&Serial2, 18, 21, 19); // AUX M0 M1
 
 // LoRa_E22 e22ttl(&Serial2, 22, 4, 18, 21, 19, UART_BPS_RATE_9600); //  esp32 RX <-- e22 TX, esp32 TX --> e22 RX AUX M0 M1
 //  -------------------------------------
@@ -88,25 +88,25 @@ void loop()
 			//Serial.println(rc.status.getResponseDescription());
 			// Print the message received
 			Serial.println(rc.data);
-			// char command = rc.data.charAt(0);
-			// switch (command)
-			// {
-			// case 'W':
-			// 	motor.forward();
-			// 	break;
-			// case 'S':
-			// 	motor.backward();
-			// 	break;
-			// case 'A':
-			// 	motor.left();
-			// 	break;
-			// case 'D':
-			// 	motor.right();
-			// 	break;
-			// default:
-			// 	motor.stop();
-			// 	break;
-			// }
+			char command = rc.data.charAt(0);
+			switch (command)
+			{
+			case 'W':
+				motor.forward();
+				break;
+			case 'S':
+				motor.backward();
+				break;
+			case 'A':
+				motor.left();
+				break;
+			case 'D':
+				motor.right();
+				break;
+			default:
+				motor.stop();
+				break;
+			}
 
 #ifdef ENABLE_RSSI
 			// Serial.print("RSSI: "); Serial.println(rc.rssi, DEC);
@@ -130,5 +130,6 @@ void loop()
 		String message = lidar.createString(rxBuffer, rxLength);
 
 		e22ttl.sendMessage(message);
+		delay(100);
 	}
 }

@@ -12,6 +12,10 @@ void Motor::set()
     pinMode(pinoMotor1, OUTPUT);
     pinMode(pinoMotor2, OUTPUT);
     pinMode(pinoMotor3, OUTPUT);
+    digitalWrite(pinoMotor1, LOW);
+    digitalWrite(pinoMotor2, LOW);
+    digitalWrite(pinoMotor3, LOW);
+    digitalWrite(pinoMotor0, LOW);
 }
 
 void Motor::forward()
