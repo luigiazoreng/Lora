@@ -2,24 +2,95 @@
 #include "LoRa_E22.h"
 #include "Lidar.h"
 #include "Motor.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 #define ENABLE_RSSI true
 #define FREQUENCY_915
-#define RX1 27
-#define TX1 13
+// #define RX1 27
+// #define TX1 13
 
 Lidar lidar;
 Motor motor;
 LoRa_E22 e22ttl(&Serial2, 18, 21, 19); // AUX M0 M1
 
 unsigned long lastSerial1ReadTime = 0;
-const unsigned long serial1ReadInterval = 1000; // 1 segundo
+const unsigned long serial1ReadInterval = 1500; // 2 segundos
+
+
+void receiveCommandTask(void *parameter)
+{
+  while (1)
+  {
+    if (e22ttl.available() > 1)
+    {
+#ifdef ENABLE_RSSI
+      ResponseContainer rc = e22ttl.receiveMessageRSSI();
+#else
+      ResponseContainer rc = e22ttl.receiveMessage();
+#endif
+
+      if (rc.status.code != 1)
+      {
+        Serial.println(rc.status.getResponseDescription());
+      }
+      else
+      {
+        Serial.println(rc.data);
+        char command = rc.data.charAt(0);
+        switch (command)
+        {
+        case 'W':
+          motor.forward();
+          break;
+        case 'S':
+          motor.backward();
+          break;
+        case 'A':
+          motor.left();
+          break;
+        case 'D':
+          motor.right();
+          break;
+        case 'P':
+          motor.stop();
+          break;
+        }
+      }
+      vTaskDelay(10 / portTICK_PERIOD_MS);
+    }
+    vTaskDelay(1); // Ensure fairness to other tasks
+  }
+}
+
+void sendLidarDataTask(void *parameter)
+{
+  while (1)
+  {
+    if (Serial1.available() > 0)
+    {
+      // Read data from Serial1
+      char hexChars[3];
+      hexChars[0] = Serial1.read();
+      hexChars[1] = Serial1.read();
+      hexChars[2] = '\0'; // Null-terminate the string
+
+      // Convert the hexadecimal string to an integer
+      int hexValue = strtol(hexChars, NULL, 16);
+
+      // Print the received hexadecimal value to Serial
+      Serial.print(hexValue, HEX);
+      vTaskDelay(10 / portTICK_PERIOD_MS); // Adjust delay as needed
+    }
+    vTaskDelay(1); // Ensure fairness to other tasks
+  }
+}
 
 void setup()
 {
   motor.set();
   Serial.begin(115200);
-  Serial1.begin(115200, SERIAL_8N1, RX1, TX1);
+  Serial1.begin(115200);
   delay(500);
 
   e22ttl.begin();
@@ -36,72 +107,13 @@ void setup()
 
   ResponseStatus rs = e22ttl.sendMessage("Hello, I'm the transmitter, the robot ");
   Serial.println(rs.getResponseDescription());
+
+  xTaskCreate(receiveCommandTask, "receiveCommandTask", 4096, NULL, 1, NULL);
+  xTaskCreate(sendLidarDataTask, "sendLidarDataTask", 4096, NULL, 1, NULL);
 }
 
 void loop()
 {
-  if (e22ttl.available() > 1)
-  {
-#ifdef ENABLE_RSSI
-    ResponseContainer rc = e22ttl.receiveMessageRSSI();
-#else
-    ResponseContainer rc = e22ttl.receiveMessage();
-#endif
-
-    if (rc.status.code != 1)
-    {
-      Serial.println(rc.status.getResponseDescription());
-    }
-    else
-    {
-      Serial.println(rc.data);
-      char command = rc.data.charAt(0);
-      switch (command)
-      {
-      case 'W':
-        motor.forward();
-        break;
-      case 'S':
-        motor.backward();
-        break;
-      case 'A':
-        motor.left();
-        break;
-      case 'D':
-        motor.right();
-        break;
-      case 'P':
-        motor.stop();
-        break;
-      }
-
-#ifdef ENABLE_RSSI
-      // Serial.print("RSSI: "); Serial.println(rc.rssi, DEC);
-#endif
-    }
-  }
-
-  unsigned long currentMillis = millis();
-  if (currentMillis - lastSerial1ReadTime >= serial1ReadInterval)
-  {
-    if (Serial1.available() > 1)
-    {
-      byte rxBuffer[2048] = {};
-      int rxLength = 0;
-      try
-      {
-        rxLength = Serial1.read(rxBuffer, 2048);
-      }
-      catch (const std::exception &e)
-      {
-        Serial.println("Error reading data");
-      }
-
-      String message = lidar.createString(rxBuffer, rxLength);
-
-      e22ttl.sendMessage(message);
-    }
-
-    lastSerial1ReadTime = currentMillis;
-  }
+  // The loop can be left empty as most of the work is done in tasks
+  vTaskDelay(1000 / portTICK_PERIOD_MS);  // Adjust delay as needed
 }
