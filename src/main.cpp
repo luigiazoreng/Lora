@@ -12,7 +12,7 @@
 
 Lidar lidar;
 Motor motor;
-LoRa_E22 e22ttl(&Serial2, 18, 21, 19); // AUX M0 M1
+LoRa_E22 e22ttl(&Serial2, 27, 21, 19); // AUX M0 M1
 
 unsigned long lastSerial1ReadTime = 0;
 const unsigned long serial1ReadInterval = 1500; // 2 segundos
@@ -69,17 +69,22 @@ void sendLidarDataTask(void *parameter)
   {
     if (Serial1.available() > 0)
     {
-      // Read data from Serial1
-      char hexChars[3];
-      hexChars[0] = Serial1.read();
-      hexChars[1] = Serial1.read();
-      hexChars[2] = '\0'; // Null-terminate the string
+      byte rxBuffer[2048] = {};
+      int rxLength = 0;
+      try
+      {
+        rxLength = Serial1.read(rxBuffer, 2048);
+      }
+      catch (const std::exception &e)
+      {
+        Serial.println("Error reading data");
+      }
 
-      // Convert the hexadecimal string to an integer
-      int hexValue = strtol(hexChars, NULL, 16);
+      String message = lidar.createString(rxBuffer, rxLength);
 
-      // Print the received hexadecimal value to Serial
-      Serial.print(hexValue, HEX);
+      e22ttl.sendMessage(message);
+
+
       vTaskDelay(10 / portTICK_PERIOD_MS); // Adjust delay as needed
     }
     vTaskDelay(1); // Ensure fairness to other tasks
@@ -90,7 +95,7 @@ void setup()
 {
   motor.set();
   Serial.begin(115200);
-  Serial1.begin(115200);
+  Serial1.begin(115200, SERIAL_8N1);
   delay(500);
 
   e22ttl.begin();
