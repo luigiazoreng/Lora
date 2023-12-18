@@ -113,12 +113,12 @@ void setup()
   ResponseStatus rs = e22ttl.sendMessage("Hello, I'm the transmitter, the robot ");
   Serial.println(rs.getResponseDescription());
 
-  xTaskCreate(receiveCommandTask, "receiveCommandTask", 4096, NULL, 1, NULL);
-  xTaskCreate(sendLidarDataTask, "sendLidarDataTask", 4096, NULL, 1, NULL);
+  //xTaskCreate(receiveCommandTask, "receiveCommandTask", 4096, NULL, 1, NULL);
+ // xTaskCreate(sendLidarDataTask, "sendLidarDataTask", 4096, NULL, 1, NULL);
 }
 
 void loop()
 {
   // The loop can be left empty as most of the work is done in tasks
-  vTaskDelay(1000 / portTICK_PERIOD_MS);  // Adjust delay as needed
+  vTaskDelay(100 / portTICK_PERIOD_MS);  // Adjust delay as needed
 }
