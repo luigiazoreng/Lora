@@ -7,12 +7,12 @@
 
 #define ENABLE_RSSI true
 #define FREQUENCY_915
-// #define RX1 27
-// #define TX1 13
+#define RX1 27
+#define TX1 13
 
 Lidar lidar;
 Motor motor;
-LoRa_E22 e22ttl(&Serial2, 27, 21, 19); // AUX M0 M1
+LoRa_E22 e22ttl(&Serial2, 18, 21, 19); // AUX M0 M1
 
 unsigned long lastSerial1ReadTime = 0;
 const unsigned long serial1ReadInterval = 1500; // 2 segundos
@@ -95,7 +95,7 @@ void setup()
 {
   motor.set();
   Serial.begin(115200);
-  Serial1.begin(115200, SERIAL_8N1);
+  Serial1.begin(115200, SERIAL_8N1, RX1, TX1);
   delay(500);
 
   e22ttl.begin();
